@@ -7,3 +7,5 @@ model.ckpt*
 *.gif
 *.ogv
 *.mp4
+
+\.idea/
