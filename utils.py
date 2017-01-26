@@ -3,10 +3,10 @@
 import sys
 import pygame
 
-import wx
-wx.App()
-
 import numpy as np
+
+from PyQt5.QtGui import QPixmap, QScreen
+from PyQt5.QtWidgets import QApplication
 
 from skimage.color import rgb2gray
 from skimage.transform import resize
@@ -16,48 +16,53 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 
-IMG_W = 200
-IMG_H = 66
-
-
 def take_screenshot():
-    screen = wx.ScreenDC()
-    size = screen.GetSize()
-    bmp = wx.Bitmap(size[0], size[1])
-    mem = wx.MemoryDC(bmp)
-    mem.Blit(0, 0, size[0], size[1], screen, 0, 0)
-    return bmp.GetSubBitmap(wx.Rect([0,0],[615,480]))
-
-
-def prepare_image(img):
-    if(type(img) == wx._core.Bitmap):
-        buf = img.ConvertToImage().GetData()
-        img = np.frombuffer(buf, dtype='uint8')
-
-    img = img.reshape(480, 615, 3)
-    img = resize(img, [IMG_H, IMG_W])
-
+    img = QScreen.grabWindow(QApplication.primaryScreen(), QApplication.desktop().winId(), 0, 0, 320, 240)
     return img
+
+
+# def prepare_image(img):
+#     if(type(img) == wx._core.Bitmap):
+#         buf = img.ConvertToImage().GetData()
+#         img = np.frombuffer(buf, dtype='uint8')
+#
+#     img = img.reshape(480, 615, 3)
+#     img = resize(img, [IMG_H, IMG_W])
+#
+#     return img
 
 
 class XboxController:
     def __init__(self):
         try:
             pygame.init()
+
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
+
+            self.n_buttons = self.joystick.get_numbuttons()
+            self.n_axes = self.joystick.get_numaxes()
+
         except:
-            print 'unable to connect to Xbox Controller'
+            print('unable to connect to Xbox Controller')
 
 
     def read(self):
         pygame.event.pump()
-        x = self.joystick.get_axis(0)
-        y = self.joystick.get_axis(1)
-        a = self.joystick.get_button(0)
-        b = self.joystick.get_button(2) # b=1, x=2
-        rb = self.joystick.get_button(5)
-        return [x, y, a, b, rb]
+
+        axes_buttons = []
+        for i in range(self.n_axes):
+            axes_buttons.append(self.joystick.get_axis(i))
+
+        for i in range(self.n_buttons):
+            axes_buttons.append(self.joystick.get_button(i))
+
+        # x = self.joystick.get_axis(0)
+        # y = self.joystick.get_axis(1)
+        # a = self.joystick.get_button(0)
+        # b = self.joystick.get_button(2) # b=1, x=2
+        # rb = self.joystick.get_button(4)
+        return axes_buttons #[x, y, a, b, rb]
 
 
     def manual_override(self):
@@ -109,7 +114,7 @@ def viewer(sample):
     for i in range(len(image_files)):
 
         # joystick
-        print i, " ", joystick_values[i,:]
+        print(i, " ", joystick_values[i,:])
 
         # format data
         plotData.append( joystick_values[i,:] )
@@ -140,40 +145,40 @@ def viewer(sample):
 
 
 # prepare training data
-def prepare(samples):
-    print "Preparing data"
+# def prepare(samples):
+#     print("Preparing data")
+#
+#     X = []
+#     y = []
+#
+#     for sample in samples:
+#         print sample
+#
+#         # load sample
+#         image_files, joystick_values = load_sample(sample)
+#
+#         # add joystick values to y
+#         y.append(joystick_values)
+#
+#         # load, prepare and add images to X
+#         for image_file in image_files:
+#             image = imread(image_file)
+#             vec = prepare_image(image)
+#             X.append(vec)
+#
+#     print("Saving to file...")
+#     X = np.asarray(X)
+#     y = np.concatenate(y)
+#
+#     np.save("data/X", X)
+#     np.save("data/y", y)
+#
+#     print("Done!")
+#     return
 
-    X = []
-    y = []
 
-    for sample in samples:
-        print sample
-
-        # load sample
-        image_files, joystick_values = load_sample(sample)
-
-        # add joystick values to y
-        y.append(joystick_values)
-
-        # load, prepare and add images to X
-        for image_file in image_files:
-            image = imread(image_file)
-            vec = prepare_image(image)
-            X.append(vec)
-
-    print "Saving to file..."
-    X = np.asarray(X)
-    y = np.concatenate(y)
-
-    np.save("data/X", X)
-    np.save("data/y", y)
-
-    print "Done!"
-    return
-
-
-if __name__ == '__main__':
-    if sys.argv[1] == 'viewer':
-        viewer(sys.argv[2])
-    elif sys.argv[1] == 'prepare':
-        prepare(sys.argv[2:])
+# if __name__ == '__main__':
+#     if sys.argv[1] == 'viewer':
+#         viewer(sys.argv[2])
+#     elif sys.argv[1] == 'prepare':
+#         prepare(sys.argv[2:])
