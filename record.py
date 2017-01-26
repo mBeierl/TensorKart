@@ -8,7 +8,8 @@ import shutil
 
 from datetime import datetime
 
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel, QApplication, QMessageBox, QLineEdit
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, \
+    QApplication, QMessageBox, QLineEdit, QTextEdit
 from PyQt5.QtGui import QIcon, QPixmap, QScreen, QGuiApplication
 from PyQt5.QtCore import QBasicTimer
 
@@ -38,7 +39,9 @@ class MainWindow(QWidget):
 
     def initUI(self):
         # Create Boxes
-        hbox = QHBoxLayout()
+        hboxTop = QHBoxLayout()
+        hboxBottom = QHBoxLayout()
+        vbox = QVBoxLayout()
 
         # Create Elements
         self.recordButton = QPushButton("Record")
@@ -52,15 +55,23 @@ class MainWindow(QWidget):
         self.lbl_image = QLabel(self)
         self.lbl_image.setPixmap(image)
 
+        self.controllerText = QTextEdit(self)
+        self.controllerText.append("Controller input:")
 
         # Add Elements to Boxes
-        hbox.addStretch(1)
-        hbox.addWidget(self.lbl_image)
-        hbox.addWidget(self.recordButton)
-        hbox.addWidget(self.pathTxt)
+        hboxTop.addStretch(1)
+        hboxTop.addWidget(self.lbl_image)
+        hboxTop.addWidget(self.controllerText)
+
+        hboxBottom.addWidget(self.recordButton)
+        hboxBottom.addWidget(self.pathTxt)
+
+        vbox.addStretch(1)
+        vbox.addLayout(hboxTop)
+        vbox.addLayout(hboxBottom)
 
         # Assign Layout
-        self.setLayout(hbox)
+        self.setLayout(vbox)
 
         # Position Window, set Title & show
         self.setGeometry(0, 0, 660, 330)
@@ -138,6 +149,8 @@ class MainWindow(QWidget):
             self.save_data()
         else:
             self.lbl_image.setPixmap(self.img)
+            str_controller_data = ' '.join(str(e) for e in self.controller_data)
+            self.controllerText.append(str_controller_data)
 
 
     def save_data(self):

@@ -39,6 +39,7 @@ class XboxController:
 
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
+            print('Initialized Joystick: {}'.format(self.joystick.get_name()))
 
             self.n_buttons = self.joystick.get_numbuttons()
             self.n_axes = self.joystick.get_numaxes()
