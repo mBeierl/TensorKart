@@ -15,6 +15,7 @@ from PyQt5.QtCore import QBasicTimer
 
 from utils import XboxController, take_screenshot
 
+IDLE_SAMPLE_RATE = 1500
 SAMPLE_RATE = 200
 
 class MainWindow(QWidget):
@@ -34,7 +35,8 @@ class MainWindow(QWidget):
         # Timer
         self.timer = QBasicTimer()
         self.rate = SAMPLE_RATE
-        self.timer.start(self.rate, self)
+        self.idle_rate = IDLE_SAMPLE_RATE
+        self.timer.start(self.idle_rate, self)
 
 
     def initUI(self):
@@ -82,15 +84,20 @@ class MainWindow(QWidget):
 
     def on_btn_record(self, event):
 
+        # pause timer
+        self.timer.Stop()
+
         # switch state
         self.recording = not self.recording
 
         if self.recording:
             self.start_recording()
             self.recordButton.setText("Stop Recording")
+            self.timer.Start(self.rate)
         else:
             self.recordButton.setText("Record")
-
+            self.timer.Start(self.idle_rate)
+            
 
     def start_recording(self):
 
